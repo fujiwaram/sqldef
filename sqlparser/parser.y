@@ -147,6 +147,7 @@ func forceEOF(yylex interface{}) {
 %right <bytes> BINARY UNDERSCORE_BINARY
 %right <bytes> INTERVAL
 %nonassoc <bytes> '.'
+%left <bytes> '::'
 
 // There is no need to define precedence for the JSON
 // operators because the syntax is restricted enough that
@@ -740,6 +741,11 @@ column_definition_type:
     $1.Default = NewStrVal($3)
     $$ = $1
   }
+| column_definition_type DEFAULT STRING '::' CHARACTER VARYING
+  {
+    $1.Default = NewStrVal($3)
+    $$ = $1
+  }
 | column_definition_type DEFAULT INTEGRAL
   {
     $1.Default = NewIntVal($3)
@@ -768,6 +774,17 @@ column_definition_type:
 | column_definition_type ON UPDATE CURRENT_TIMESTAMP
   {
     $1.OnUpdate = NewValArg($4)
+    $$ = $1
+  }
+| column_definition_type DEFAULT STRING '::' TIMESTAMP
+  {
+    $1.Default = NewValArg($3)
+    $$ = $1
+  }
+| column_definition_type DEFAULT STRING '::' TIMESTAMP time_zone_opt
+  {
+    $1.Default = NewValArg($3)
+    $1.Timezone = $6
     $$ = $1
   }
 | column_definition_type AUTO_INCREMENT
